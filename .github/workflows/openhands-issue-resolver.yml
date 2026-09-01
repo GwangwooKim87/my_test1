@@ -6,7 +6,6 @@ on:
 
 jobs:
   fix_issue:
-    # fix-me 라벨이 부착되었을 때만 실행
     if: github.event.label.name == 'fix-me'
     runs-on: ubuntu-latest
     permissions:
@@ -15,40 +14,27 @@ jobs:
       issues: write
 
     steps:
-      # 1. 저장소 코드 가져오기
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. OpenHands AI 에이전트 구동
       - name: Run OpenHands AI Action
         uses: all-hands-ai/openhands-github-action@v1
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-          LLM_MODEL: "openrouter/deepseek/deepseek-chat" # 사용 모델 지정
+          LLM_MODEL: "openrouter/deepseek/deepseek-chat"
           LLM_BASE_URL: "https://openrouter.ai/api/v1"
         with:
           prompt: |
-            다음 GitHub 이슈 내용을 분석하여 요구사항에 맞게 코드를 수정하거나 생성해줘:
-            
-            [이슈 제목]
-            ${{ github.event.issue.title }}
-            
-            [이슈 내용]
-            ${{ github.event.issue.body }}
-            
-            작업 완료 후 테스트가 가능하면 검증까지 마쳐줘.
+            다음 이슈 요구사항에 맞게 코드를 구현해줘:
+            [제목] ${{ github.event.issue.title }}
+            [본문] ${{ github.event.issue.body }}
 
-      # 3. 변경 사항을 새 브랜치로 푸시하고 PR 자동 생성
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "fix: OpenHands 자동 이슈 해결 (#${{ github.event.issue.number }})"
-          title: "🤖 [OpenHands] 이슈 #${{ github.event.issue.number }} 자동 해결 패치"
-          body: |
-            이슈 #${{ github.event.issue.number }}를 해결하기 위해 OpenHands AI가 생성한 Pull Request입니다.
-            
-            - **대상 이슈:** #${{ github.event.issue.number }} - ${{ github.event.issue.title }}
-            - 코드 변경 사항을 검토한 후 머지해 주세요.
+          commit-message: "fix: OpenHands auto issue resolver (#${{ github.event.issue.number }})"
+          title: "🤖 [OpenHands] 이슈 #${{ github.event.issue.number }} 자동 해결"
+          body: "이슈 #${{ github.event.issue.number }} 해결을 위한 PR입니다."
           branch: "openhands/fix-issue-${{ github.event.issue.number }}"
           delete-branch: true
