@@ -6,3 +6,4 @@
 한번더 추가
 stash test
 state == 0
+state1 == 1
